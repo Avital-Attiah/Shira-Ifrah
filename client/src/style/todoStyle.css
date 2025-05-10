@@ -1,0 +1,186 @@
+/* כלליים */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.todos-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+
+.todos-header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+button {
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.exit-btn {
+  background-color: #f44336;
+}
+
+.exit-btn:hover {
+  background-color: #d32f2f;
+}
+
+.add-todo-btn, .edit-btn {
+  background-color: #2196F3;
+}
+
+.add-todo-btn:hover, .edit-btn:hover {
+  background-color: #1976D2;
+}
+
+.save-btn, .update-btn {
+  background-color: #008CBA;
+}
+
+.save-btn:hover, .update-btn:hover {
+  background-color: #006F8C;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+}
+
+.cancel-btn:hover {
+  background-color: #d32f2f;
+}
+
+/* חיפוש ומיון */
+.search-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.search-input {
+  padding: 8px;
+  width: 200px;
+  margin-right: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.search-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.sort-select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  margin-top: 10px;
+  width: 200px;
+}
+
+/* תצוגת המטלות */
+.add-todo-form, .edit-todo-form {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.todo-input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.todo-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0 0;
+}
+
+.todo-item {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.todo-checkbox {
+  margin-left: 10px;
+}
+
+.delete-btn {
+  background-color: #f44336;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+.edit-btn {
+  background-color: #2196F3;
+}
+
+.edit-btn:hover {
+  background-color: #1976D2;
+}
+
+/* סגנונות נוספים */
+button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background-color: #ddd;
+}
+/* .homeBtn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: red; /* צבע אדום */
+  color: white;
+  border: none;
+  padding: 5px 10px; /* הקטנה של הריפוד */
+  cursor: pointer;
+  font-size: 12px; /* הקטנת גודל הפונט */
+  z-index: 1000; /* וודא שהכפתור יישאר מעל שאר התוכן */
+}
+
+
+.homeBtn:hover {
+  background-color: rgba(255, 0, 0, 0.396);
+} */
+

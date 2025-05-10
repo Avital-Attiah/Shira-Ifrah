@@ -1,0 +1,134 @@
+/* container */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: relative;
+  }
+  .container h2 {
+    color: red;
+  }
+  
+
+  
+  /* search bar */
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  
+  input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+  }
+  
+  /* my posts section */
+  ul {
+    list-style: none;
+    padding: 0;
+    flex: 1 1 100%;
+    transition: transform 0.3s ease-in-out; /* Transition effect */
+  }
+  
+  ul li {
+    margin-bottom: 10px;
+  }
+  
+  button {
+    background-color: #f1f1f1;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+  }
+  
+  button:hover {
+    background-color: #e5e5e5;
+  }
+  
+  /* post details */
+  .otherPost-details {
+    position: fixed;
+    top: 10%;
+    right: 0; /* מיקום הצד הימני */
+    width: 30%;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 80%;
+    overflow-y: auto;
+    display: none;  /* Default to hidden */
+    z-index: 10;
+  }
+  
+  
+  .otherPost-details.open {
+    display: block;  /* Only show when a post is selected */
+  }
+  
+  .otherPost-details h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .otherPost-details p {
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  
+  .otherPost-details button {
+    background-color:#2196F3;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  
+  .otherPost-details button:hover {
+    background-color: #45a049;
+  }
+  
+  /* when a post is selected */
+  .container.post-selected ul {
+    transform: translateX(-50%);  /* Move the posts to the left */
+    opacity: 0.3;  /* Dim the rest */
+  }
+  
+  .comments {
+    margin-top: 20px;
+  }
+  
+  /* .homeBtn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: red; /* צבע אדום */
+    color: white;
+    border: none;
+    padding: 5px 10px; /* הקטנה של הריפוד */
+    cursor: pointer;
+    font-size: 12px; /* הקטנת גודל הפונט */
+    z-index: 1000; /* וודא שהכפתור יישאר מעל שאר התוכן */
+  }
+  
+  
+  .homeBtn:hover {
+    background-color: rgba(255, 0, 0, 0.396);
+  } */
