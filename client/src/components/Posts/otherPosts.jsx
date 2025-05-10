@@ -19,7 +19,8 @@ const OtherPosts = () => {
       return;
     }
 
-    fetch(`http://localhost:3001/posts?userId_ne=${currentUser.id}`)
+    // משתמש בשדה user_id_ne כדי לסנן שונה ממשתמש נוכחי
+    fetch(`http://localhost:3001/posts?user_id_ne=${currentUser.id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch other users' posts");
         return res.json();
@@ -33,24 +34,23 @@ const OtherPosts = () => {
         setOtherUsersPosts([]);
         setFilteredPosts([]);
       });
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     const filtered = otherUsersPosts.filter(
       (post) =>
         post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.body.toLowerCase().includes(searchQuery.toLowerCase())
+        post.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredPosts(filtered);
   }, [searchQuery, otherUsersPosts]);
 
-  
- 
-
   return (
     <div className="container">
       {/* כפתור Home */}
-      <button className="homeBtn" onClick={() =>navigate(`/${currentUser.username}/${currentUser.id}/home`)}>Home</button>
+      <button className="homeBtn" onClick={() => navigate(`/${currentUser.username}/${currentUser.id}/home`)}>
+        Home
+      </button>
 
       <h2>פוסטים של משתמשים אחרים</h2>
       <input
@@ -82,7 +82,7 @@ const OtherPosts = () => {
       {selectedPost && (
         <div className="otherPost-details">
           <h3>{selectedPost.title}</h3>
-          <p>{selectedPost.body}</p>
+          <p>{selectedPost.content}</p>
         </div>
       )}
     </div>

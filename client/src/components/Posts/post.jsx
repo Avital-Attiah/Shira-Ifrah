@@ -5,11 +5,15 @@ import "../../style/postStyle.css";
 
 const Post = (data) => {
   const [isEditingPost, setIsEditingPost] = useState(false);
-  const [newPost, setNewPost] = useState({ title: "", body: "" });
+  const [newPost, setNewPost] = useState({ title: "", content: "" });
 
   // טיפול בעריכת פוסט
   const handleEditPost = () => {
-    const updatedPost = { ...data.selectedPost, title: newPost.title, body: newPost.body };
+    const updatedPost = {
+      ...data.selectedPost,
+      title: newPost.title || data.selectedPost.title,
+      content: newPost.content || data.selectedPost.content,
+    };
     fetch(`http://localhost:3001/posts/${data.selectedPost.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -17,7 +21,9 @@ const Post = (data) => {
     })
       .then((res) => (res.ok ? res.json() : Promise.reject("Failed to update post")))
       .then((updatedPostData) => {
-        data.setPosts(data.posts.map((p) => (p.id === updatedPostData.id ? updatedPostData : p)));
+        data.setPosts(
+          data.posts.map((p) => (p.id === updatedPostData.id ? updatedPostData : p))
+        );
         data.setSelectedPost(updatedPostData);
         setIsEditingPost(false);
       })
@@ -50,22 +56,36 @@ const Post = (data) => {
       </button>
       {data.selectedPost?.id === data.post.id && (
         <div>
-          {data.allowEditDelete && (
+          {data.currentUser.id === data.post.user_id && (
             <>
-              <button className="deleteEditBtn" onClick={() => setIsEditingPost(true)}>ערוך</button>
-              <button className="deleteEditBtn" onClick={handleDeletePost}>מחק</button>
+              <button
+                className="deleteEditBtn"
+                onClick={() => {
+                  setIsEditingPost(true);
+                  setNewPost({
+                    title: data.post.title,
+                    content: data.post.content,
+                  });
+                }}
+              >
+                ערוך
+              </button>
+              <button className="deleteEditBtn" onClick={handleDeletePost}>
+                מחק
+              </button>
             </>
           )}
+
           {isEditingPost ? (
             <>
               <input
                 type="text"
-                value={newPost.title || data.post.title}
+                value={newPost.title}
                 onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
               />
               <textarea
-                value={newPost.body || data.post.body}
-                onChange={(e) => setNewPost({ ...newPost, body: e.target.value })}
+                value={newPost.content}
+                onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
               />
               <button onClick={handleEditPost}>שמור שינויים</button>
               <button onClick={() => setIsEditingPost(false)}>בטל עריכה</button>
@@ -76,7 +96,7 @@ const Post = (data) => {
                 <strong>כותרת:</strong> {data.post.title}
               </p>
               <p>
-                <strong>תוכן:</strong> {data.post.body}
+                <strong>תוכן:</strong> {data.post.content}
               </p>
               <Comments postId={data.post.id} currentUser={data.currentUser} />
             </div>

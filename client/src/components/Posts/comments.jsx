@@ -1,89 +1,108 @@
 import React, { useState, useEffect } from "react";
 
+// קומפוננטת תגובות עם חיבור לשרת
 const Comments = ({ postId, currentUser }) => {
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState({ title: "", body: "" }); // עדכון למבנה חדש עם title ו-body
+  const [newContent, setNewContent] = useState("");
 
-  // קריאת תגובות מהשרת
+  // קריאה ראשונית של תגובות עבור פוסט מסוים
   useEffect(() => {
-    fetch(`http://localhost:3001/comments?postId=${postId}`)
-      .then((res) => res.json())
-      .then((data) => setComments(data))
-      .catch((err) => console.error("Error fetching comments", err));
+    fetch(`http://localhost:3001/comments?post_id=${postId}`)
+      .then(res => res.json())
+      .then(data => setComments(data))
+      .catch(err => console.error("Error fetching comments", err));
   }, [postId]);
 
-  // הוספת תגובה
+  // הוספת תגובה חדשה
   const handleAddComment = () => {
-    if (newComment.title.trim() && newComment.body.trim()) {
-      const comment = {
-        postId,
-        name: newComment.title, // כותרת התגובה שמוכנסת לשדה name
-        email: currentUser.email || "user@example.com", // נשתמש ב- email של המשתמש
-        body: newComment.body, // גוף התגובה
-      };
-      fetch("http://localhost:3001/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(comment),
+    const text = newContent.trim();
+    if (!text) return;
+
+    const payload = {
+      post_id: postId,
+      user_id: currentUser.id,
+      content: text
+    };
+
+    fetch("http://localhost:3001/comments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to add comment");
+        return res.json();
       })
-        .then((res) => res.json())
-        .then((data) => setComments([...comments, data]))
-        .catch((err) => console.error("Error adding comment", err));
-      setNewComment({ title: "", body: "" }); // ריקון השדות אחרי ההוספה
-    }
+      .then(comment => {
+        setComments(prev => [...prev, comment]);
+        setNewContent("");
+      })
+      .catch(err => console.error("Error adding comment", err));
   };
 
   // מחיקת תגובה
   const handleDeleteComment = (commentId) => {
     fetch(`http://localhost:3001/comments/${commentId}`, { method: "DELETE" })
-      .then(() => setComments(comments.filter((comment) => comment.id !== commentId)))
-      .catch((err) => console.error("Error deleting comment", err));
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to delete comment");
+        setComments(prev => prev.filter(c => c.id !== commentId));
+      })
+      .catch(err => console.error("Error deleting comment", err));
   };
 
-  // עריכת תגובה
+  // עריכת תגובה קיימת
   const handleEditComment = (comment) => {
-    const updatedComment = { ...comment, body: prompt("ערוך את התגובה", comment.body) };
-    fetch(`http://localhost:3001/comments/${updatedComment.id}`, {
+    const updatedText = prompt("ערוך את התגובה", comment.content);
+    if (updatedText == null) return; // ביטול
+    const text = updatedText.trim();
+    if (!text) return;
+
+    const payload = {
+      post_id: postId,
+      user_id: currentUser.id,
+      content: text
+    };
+
+    fetch(`http://localhost:3001/comments/${comment.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedComment),
+      body: JSON.stringify(payload)
     })
-      .then((res) => res.json())
-      .then((updated) => setComments(comments.map((c) => (c.id === updated.id ? updated : c))))
-      .catch((err) => console.error("Error editing comment", err));
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to update comment");
+        return res.json();
+      })
+      .then(updated => {
+        setComments(prev => prev.map(c => c.id === updated.id ? updated : c));
+      })
+      .catch(err => console.error("Error editing comment", err));
   };
 
   return (
-    <div>
+    <div className="comments-section">
       <h3>תגובות</h3>
-      {/* הצגת התגובות */}
       <ul>
-        {comments.map((comment) => (
-          <li key={comment.id}>
-            <strong>{comment.name}</strong>: {comment.body} {/* הצגת הכותרת של התגובה */}
-            {/* הצגת כפתורי מחיקה ועריכה רק אם התגובה שייכת למשתמש הנוכחי */}
-            {comment.email === currentUser.email && (
-              <>
-                <button onClick={() => handleDeleteComment(comment.id)}>מחק</button>
-                <button onClick={() => handleEditComment(comment)}>ערוך</button>
+        {comments.map(c => (
+          <li key={c.id}>
+            <span>{c.content}</span>
+            {/* אפשרות עריכה ומחיקה רק לבעל התגובה */}
+            {c.user_id === currentUser.id && (
+              <>  
+                <button onClick={() => handleEditComment(c)}>ערוך</button>
+                <button onClick={() => handleDeleteComment(c.id)}>מחק</button>
               </>
             )}
           </li>
         ))}
       </ul>
-      {/* הוספת תגובה חדשה */}
-      <input
-        type="text"
-        placeholder="כותרת התגובה"
-        value={newComment.title}
-        onChange={(e) => setNewComment({ ...newComment, title: e.target.value })}
-      />
-      <textarea
-        placeholder="תוכן התגובה"
-        value={newComment.body}
-        onChange={(e) => setNewComment({ ...newComment, body: e.target.value })}
-      />
-      <button onClick={handleAddComment}>הוסף תגובה</button>
+      <div className="add-comment">
+        <textarea
+          placeholder="הזן תגובה חדשה"
+          value={newContent}
+          onChange={e => setNewContent(e.target.value)}
+        />
+        <button onClick={handleAddComment}>הוסף תגובה</button>
+      </div>
     </div>
   );
 };

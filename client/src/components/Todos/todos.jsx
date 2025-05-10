@@ -1,160 +1,148 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import TodoItem from './todoItem'; 
+import TodoItem from './todoItem';
 import '../../style/todoStyle.css';
-import { useUser } from "../../UserContext";
+import { useUser } from '../../UserContext';
 
 const Todos = () => {
   const [todos, setTodos] = useState([]);
   const [filteredTodos, setFilteredTodos] = useState([]);
-  const [newTodo, setNewTodo] = useState({ userId: 1, id: '', title: '', completed: false });
+  const [newTodo, setNewTodo] = useState({ title: '', completed: false });
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [sortCriteria, setSortCriteria] = useState('');
 
+  const { user: currentUser } = useUser();
+  const userId = currentUser.id;
   const navigate = useNavigate();
 
-  const { user: currentUser } = useUser(); // קבלת המשתמש מה-Context
-  const userId = currentUser.id;
-
+  // Fetch todos from server
   useEffect(() => {
-    fetch(`http://localhost:3001/todos?user_id=${userId}`)
-      .then((response) => response.json())
-      .then((data) => {
+    fetch(`http://localhost:3001/todos/getTodosById/${userId}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch todos');
+        return res.json();
+      })
+      .then(data => {
         setTodos(data);
         setFilteredTodos(data);
       })
-      .catch((error) => {
-        console.error('There was a problem with the fetch operation:', error);
-      });
-  }, []);
+      .catch(error => console.error('Error fetching todos', error));
+  }, [userId]);
 
+  // Apply search and sort
   useEffect(() => {
-    let filteredTodosList = todos;
-
+    let list = todos;
+    // Search
     if (searchQuery) {
-      filteredTodosList = filteredTodosList.filter((todo) =>
-        todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        todo.id.toString().includes(searchQuery) ||
-        todo.completed.toString().includes(searchQuery)
+      const q = searchQuery.toLowerCase();
+      list = list.filter(todo =>
+        todo.title.toLowerCase().includes(q) ||
+        todo.id.toString().includes(q) ||
+        todo.completed.toString().includes(q)
       );
     }
-    setFilteredTodos(filteredTodosList);
-  }, [searchQuery, todos]);
+    // Sort
+    if (sortCriteria) {
+      list = [...list];
+      switch (sortCriteria) {
+        case 'id':
+          list.sort((a, b) => a.id - b.id);
+          break;
+        case 'title':
+          list.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'completed':
+          list.sort((a, b) => a.completed - b.completed);
+          break;
+        default:
+          break;
+      }
+    }
+    setFilteredTodos(list);
+  }, [searchQuery, sortCriteria, todos]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewTodo({ ...newTodo, [name]: value });
-  };
-
+  // Add new todo
   const handleAddTodo = () => {
-    if (newTodo.title) {
-      fetch('http://localhost:3001/todos')
-        .then((response) => response.json())
-        .then((data) => {
-          const maxId = data.reduce((max, todo) => Math.max(max, parseInt(todo.id, 10)), 0);
-          const newId = (maxId + 1).toString();
-
-          const todoToAdd = {
-            userId: newTodo.userId,
-            id: newId,
-            title: newTodo.title,
-            completed: newTodo.completed,
-          };
-
-          fetch('http://localhost:3001/todos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(todoToAdd),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              setTodos([...todos, data]);
-              setFilteredTodos([...todos, data]);
-              setShowForm(false);
-              setNewTodo({ userId:{userId} , id: '', title: '', completed: false });
-            })
-            .catch((error) => {
-              alert('הייתה שגיאה בהוספת המטלה');
-              console.error(error);
-            });
-        })
-        .catch((error) => {
-          alert('הייתה שגיאה בקריאת המטלות מהשרת');
-          console.error(error);
-        });
-    } else {
-      alert('אנא מלאי את כל השדות');
+    if (!newTodo.title.trim()) {
+      alert('אנא מלאי את כותרת המטלה');
+      return;
     }
-  };
-
-  const handleSort = (criteria) => {
-    let sortedTodos = [...filteredTodos];
-
-    switch (criteria) {
-      case 'id':
-        sortedTodos.sort((a, b) => a.id - b.id);
-        break;
-      case 'title':
-        sortedTodos.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'completed':
-        sortedTodos.sort((a, b) => a.completed - b.completed);
-        break;
-      case 'random':
-        sortedTodos.sort(() => Math.random() - 0.5);
-        break;
-      default:
-        break;
-    }
-
-    setFilteredTodos(sortedTodos);
+    const payload = { user_id: userId, title: newTodo.title.trim(), completed: false };
+    fetch('http://localhost:3001/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to add todo');
+        return res.json();
+      })
+      .then(created => {
+        setTodos(prev => [...prev, created]);
+        setShowForm(false);
+        setNewTodo({ title: '', completed: false });
+      })
+      .catch(error => {
+        alert('הייתה שגיאה בהוספת המטלה');
+        console.error(error);
+      });
   };
 
   return (
     <div className="todos-container">
-      {/* כפתור Home */}
-      <button className="homeBtn" onClick={() =>navigate(`/${currentUser.username}/${currentUser.id}/home`)}>Home</button>
+      <button className="homeBtn" onClick={() => navigate(`/${currentUser.username}/${userId}/home`)}>
+        Home
+      </button>
 
       <h1 className="todos-header">Todos</h1>
-      <button className="exit-btn" onClick={() => navigate('/home')}>יציאה</button>
-      <button className="add-todo-btn" onClick={() => setShowForm(!showForm)}>הוסף מטלה חדשה</button>
-
-      <div className="search-container">
-        <input
-          className="search-input"
-          type="text"
-          placeholder="חיפוש לפי כותרת, מספר מזהה או מצב ביצוע"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
-      <select className="sort-select" onChange={(e) => handleSort(e.target.value)}>
-        <option value="">מיין לפי</option>
-        <option value="id">מספר מזהה</option>
-        <option value="title">כותרת</option>
-        <option value="completed">ביצוע</option>
-        <option value="random">אקראי</option>
-      </select>
+      <button className="add-todo-btn" onClick={() => setShowForm(!showForm)}>
+        {showForm ? 'בטל' : 'הוסף מטלה חדשה'}
+      </button>
 
       {showForm && (
         <div className="add-todo-form">
-          <h3>הוסף מטלה חדשה</h3>
           <input
             className="todo-input"
             type="text"
-            name="title"
-            placeholder="Title"
+            placeholder="כותרת מטלה"
             value={newTodo.title}
-            onChange={handleInputChange}
+            onChange={e => setNewTodo({ ...newTodo, title: e.target.value })}
           />
           <button className="save-btn" onClick={handleAddTodo}>שמור</button>
         </div>
       )}
 
+      <div className="controls">
+        <input
+          className="search-input"
+          type="text"
+          placeholder="חפש מטלה..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+        />
+        <select
+          className="sort-select"
+          value={sortCriteria}
+          onChange={e => setSortCriteria(e.target.value)}
+        >
+          <option value="">מיין לפי...</option>
+          <option value="id">מספר מזהה</option>
+          <option value="title">כותרת</option>
+          <option value="completed">ביצוע</option>
+        </select>
+      </div>
+
       <ul className="todo-list">
-        {filteredTodos.map((todo, index) => (
-          <TodoItem key={todo.id} todo={todo} index={index} setTodos={setTodos} setFilteredTodos={setFilteredTodos} />
+        {filteredTodos.map((todo, idx) => (
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            index={idx}
+            setTodos={setTodos}
+            setFilteredTodos={setFilteredTodos}
+            currentUser={currentUser}
+          />
         ))}
       </ul>
     </div>
